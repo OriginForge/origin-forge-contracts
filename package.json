@@ -1,0 +1,29 @@
+{
+  "name": "origin-forge-contracts",
+  "version": "0.0.1",
+  "description": "Origin Forge Contracts",
+  "author": {
+    "name": "Origin Forge",
+    "email": "team.gutalik@gmail.com"
+  },
+  
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.15"
+  },
+  "dependencies": {
+    "@bisonai/orakl-contracts": "^2.0.2",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-verify": "^2.0.11",
+    "@openzeppelin/contracts": "^5.1.0",
+    "@openzeppelin/contracts-upgradeable": "^5.1.0",
+    "@openzeppelin/hardhat-upgrades": "^3.5.0",
+    "@typechain/hardhat": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
+    "fs": "^0.0.1-security",
+    "hardhat-deploy": "^0.14.0",
+    "hardhat-shorthand": "^1.0.0",
+    "solady": "^0.0.267"
+  }
+}
