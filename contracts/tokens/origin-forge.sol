@@ -26,12 +26,9 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
     address public OF_CONTRACT;
     address public OwnerBank;
     uint constant DECIMALS_FACTOR = 10 ** 18;
-    uint public feeRevenue;
 
 
-    struct Price {
-        uint price;
-    }
+
     // return request
     // mapping(uint => uint) public reFundRequest;
 
@@ -52,7 +49,7 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
         _disableInitializers();
     }
 
-    function initialize(address defaultAdmin, address _gcKlayAddress, address _gcNftAddress)
+    function initialize(address defaultAdmin, address _gcKlayAddress, address _gcNftAddress, address _ownerBank)
         initializer public
     {
         __ERC20_init("rebaseTest", "RT");
@@ -71,13 +68,12 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
 
         GCKLAY = _gcKlayAddress;
         GC_NFT = _gcNftAddress;
-        OwnerBank = msg.sender;
+        OwnerBank = _ownerBank;
 
     }
 
-    receive() external payable  nonReentrant {
-        initStake();
-        // fundToken(msg.sender);
+    receive() external payable {
+        fundToken(msg.sender);
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -125,25 +121,28 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
         return super.nonces(owner);
     }
 
-
     // 
     // 
     // Token Buy/Sell Functions
-    function fundToken(address _to) public  payable nonReentrant {
-        require(msg.value > 0, "OriginForge: No Kaia sent");
+    function fundToken(address _to) public payable nonReentrant {
         IPayment payment = IPayment(GCKLAY);
+        (uint256 amountOfToken, uint256 buy_Fee) = _calculateFundAmount(msg.value);
+
         payment.stakeFor{value: msg.value}(address(this));
-        // calculate the amount of OF to mint
-        uint256 amountOfToken = _calculateFundAmount(msg.value);
+
+
+        IERC20 gcKlay = IERC20(GCKLAY);
+        gcKlay.transfer(OwnerBank, buy_Fee);
+
         mint(_to, amountOfToken);
 
         emit FundRequest(msg.sender, msg.value, amountOfToken);
+     
     }
 
     function returnToKaia(uint256 _amount) public {
         IPayment payment = IPayment(GCKLAY);
         IERC20 gcKlay = IERC20(GCKLAY);
-
 
         uint256 amountOfKaia = _calculateRefundAmount(_amount);
         gcKlay.approve(GCKLAY, amountOfKaia);
@@ -157,40 +156,45 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
     }
 
     // estimated utils
-    function _calculateFundAmount(uint256 _amount) public view returns (uint256) {
+        function _calculateFundAmount(uint256 _amount) public view returns (uint, uint) {
         IERC20 gcKlay = IERC20(GCKLAY);
         uint gcKlayBalance = gcKlay.balanceOf(address(this));
 
-        // 5000000 is the amount of OF that was minted at launch
-        uint _price = ((totalSupply() - 5000000 * DECIMALS_FACTOR) *
-            DECIMALS_FACTOR) / gcKlayBalance;
+        uint _price =  totalSupply() * DECIMALS_FACTOR / gcKlayBalance;
         
-        uint _amounts = (_amount * _price) / DECIMALS_FACTOR;
-        uint ownerShare = _amounts / 100; // 1% 계산
-        uint finalAmount = _amounts - ownerShare; // 99% 계산
+        uint buy_Fee = _amount / 100;
 
-        return finalAmount;
+        uint estimateBuyAmounts = (((_amount - buy_Fee)* _price) / DECIMALS_FACTOR) ;
+        
+        return (estimateBuyAmounts, buy_Fee);
     }
 
     function _calculateRefundAmount(uint256 _amount) public view returns (uint256) {
         IERC20 gcKlay = IERC20(GCKLAY);
         uint gcKlayBalance = gcKlay.balanceOf(address(this));
 
-        uint _price = (gcKlayBalance * DECIMALS_FACTOR) /
-            (totalSupply() - 5000000 * DECIMALS_FACTOR);
+        uint _price =  gcKlayBalance * DECIMALS_FACTOR / totalSupply();
 
-        uint _amounts = (_amount * _price) / DECIMALS_FACTOR;
+        uint estimateSellAmounts = (_amount * _price) / DECIMALS_FACTOR;
 
-        uint ownerShare = _amounts / 100; // 1% 계산
-        uint finalAmount = _amounts - ownerShare; // 99% 계산
+        return estimateSellAmounts;
+    }
 
-        return finalAmount;
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external pure override returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 
     // 
+    // @dev test functions
+    // @notice only for test
     // 
     // 
-    // remove funtion
     function transferToken(address _to, address _tokenAddress, uint256 _amount) public {
         IERC20 token = IERC20(_tokenAddress);
         uint256 balance = token.balanceOf(address(this));
@@ -206,13 +210,4 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
         mint(msg.sender, msg.value);
     }
 
-
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external pure override returns (bytes4) {
-        return IERC721Receiver.onERC721Received.selector;
-    }
 }
