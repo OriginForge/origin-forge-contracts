@@ -12,7 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await diamond.deploy("elementa-diamond-V1", {
     from: deployer,
     owner: diamondAdmin,
-    facets: ["adminFacet", "userFacet", "nftFacet", "botMiniGameFacet"],
+    facets: ["adminFacet"],
   });
 
   if ((await getChainId()) == "1001") {

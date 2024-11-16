@@ -28,8 +28,6 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
     uint constant DECIMALS_FACTOR = 10 ** 18;
 
 
-
-    // return request
     // mapping(uint => uint) public reFundRequest;
 
     modifier isMaxSupply(uint _mintAmount) {
