@@ -21,10 +21,13 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    
     address public originForgeDiamond;
-
     uint256 private _nextTokenId;
+
+
+    event TraitMetadataURIUpdated();
+
+
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -110,7 +113,7 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
         override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
         returns (string memory)
     {
-        return super.tokenURI(tokenId);
+        return IOriginForgeDiamond(originForgeDiamond).nft_getUri(tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -131,6 +134,8 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
     function _update_metadata_uri(uint _tokenId) external onlyRole(MINTER_ROLE) {
         string memory uri = IOriginForgeDiamond(originForgeDiamond).nft_getUri(_tokenId);
         _setTokenURI(_tokenId, uri);
+        
+        emit TraitMetadataURIUpdated();
     }
 
 }
