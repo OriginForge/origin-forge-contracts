@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>On-Chain NFT Asset Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/caver-js/1.10.2/caver.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .canvas-container {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        canvas {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #000;
+        }
+        #controls {
+            margin: 20px;
+        }
+        #controls input {
+            width: 50px;
+            margin: 0 5px;
+        }
+        #output {
+            margin-top: 20px;
+            width: 80%;
+            margin: 0 auto;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            overflow-x: auto;
+            word-break: break-all;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>On-Chain NFT Asset Manager</h1>
+
+    <!-- Kaikas 지갑 연결 버튼 -->
+    <button id="connectKaikas">Connect Kaikas Wallet</button>
+
+    <!-- 에셋 추가 섹션 -->
+    <div id="addAssetSection" style="display: none;">
+        <h2>Add New Asset</h2>
+        <div>
+            <label>Asset Name: </label>
+            <input type="text" id="assetName" placeholder="Enter asset name">
+        </div>
+        <div>
+            <label>Upload PNG: </label>
+            <input type="file" id="assetImage" accept="image/png">
+        </div>
+        <button id="addAssetButton">Add Asset</button>
+    </div>
+
+    <!-- NFT 민팅 섹션 -->
+    <div id="mintSection" style="display: none;">
+        <h2>Mint New NFT</h2>
+        <div>
+            <label>Base Asset ID: </label>
+            <input type="number" id="baseAssetId" placeholder="Enter base asset ID">
+        </div>
+        <button id="mintButton">Mint NFT</button>
+    </div>
+
+    <!-- 에셋 장착 섹션 -->
+    <div id="equipAssetSection" style="display: none;">
+        <h2>Equip Asset to Character</h2>
+        <div>
+            <label>Token ID: </label>
+            <input type="number" id="tokenId" placeholder="Enter token ID">
+        </div>
+        <div>
+            <label>Asset ID: </label>
+            <input type="number" id="assetId" placeholder="Enter asset ID">
+        </div>
+        <div id="controls">
+            <label>X: <input type="number" id="assetX" value="0" min="0" max="32"></label>
+            <label>Y: <input type="number" id="assetY" value="0" min="0" max="32"></label>
+            <label>Width: <input type="number" id="assetWidth" value="32" min="1" max="32"></label>
+            <label>Height: <input type="number" id="assetHeight" value="32" min="1" max="32"></label>
+        </div>
+        <button id="equipAssetButton">Equip Asset</button>
+    </div>
+
+    <!-- 출력 영역 -->
+    <div id="output"></div>
+
+    <!-- 캔버스 -->
+    <div class="canvas-container">
+        <canvas id="canvas" width="32" height="32"></canvas>
+    </div>
+
+    <script>
+        const connectKaikasButton = document.getElementById('connectKaikas');
+        const addAssetSection = document.getElementById('addAssetSection');
+        const mintSection = document.getElementById('mintSection');
+        const equipAssetSection = document.getElementById('equipAssetSection');
+        const addAssetButton = document.getElementById('addAssetButton');
+        const mintButton = document.getElementById('mintButton');
+        const equipAssetButton = document.getElementById('equipAssetButton');
+        const output = document.getElementById('output');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let caver;
+        let contract;
+        let userAddress;
+        let uploadedImageData;
+
+        // 컨트랙트 주소와 ABI 설정
+        const CONTRACT_ADDRESS = '0xaFE245bdBeB14e35d254B8fEe25389E44279BBD3'; // 실제 컨트랙트 주소로 변경하세요
+        const ABI = [
+            // 컨트랙트의 ABI를 여기에 추가하세요
+            // 특히 addAsset, equipAsset, mint 함수의 ABI가 필요합니다.
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "name", "type": "string" },
+                    { "internalType": "string", "name": "imageData", "type": "string" }
+                ],
+                "name": "addAsset",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "baseAssetId", "type": "uint256" }
+                ],
+                "name": "mint",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+                    { "internalType": "uint256", "name": "assetId", "type": "uint256" },
+                    { "internalType": "uint256", "name": "x", "type": "uint256" },
+                    { "internalType": "uint256", "name": "y", "type": "uint256" },
+                    { "internalType": "uint256", "name": "width", "type": "uint256" },
+                    { "internalType": "uint256", "name": "height", "type": "uint256" }
+                ],
+                "name": "equipAsset",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            // 나머지 ABI는 생략합니다.
+        ];
+
+        // Kaikas 지갑 연결
+        connectKaikasButton.addEventListener('click', async () => {
+            if (window.klaytn) {
+                try {
+                    await window.klaytn.enable();
+                    caver = new Caver(window.klaytn);
+                    const accounts = await caver.klay.getAccounts();
+                    userAddress = accounts[0];
+                    output.innerHTML = `Kaikas 지갑에 연결되었습니다: ${userAddress}`;
+                    addAssetSection.style.display = 'block';
+                    mintSection.style.display = 'block';
+                    equipAssetSection.style.display = 'block';
+
+                    // 컨트랙트 인스턴스 생성
+                    if (!contract) {
+                        contract = new caver.klay.Contract(ABI, CONTRACT_ADDRESS);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Kaikas 지갑 연결에 실패했습니다.');
+                }
+            } else {
+                alert('Kaikas 지갑이 설치되어 있지 않습니다.');
+            }
+        });
+
+        // 이미지 업로드 및 데이터 저장
+        document.getElementById('assetImage').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'image/png') {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImageData = e.target.result; // data:image/png;base64 형식
+
+                    // 캔버스에 이미지 표시
+                    const image = new Image();
+                    image.onload = () => {
+                        // 이미지 크기를 32x32로 조정하여 캔버스에 그리기
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(image, 0, 0, 32, 32);
+                        // 캔버스의 이미지를 다시 Data URL로 가져와서 크기를 줄인 Base64 데이터로 업데이트
+                        uploadedImageData = canvas.toDataURL('image/png');
+                    };
+                    image.src = uploadedImageData;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('PNG 파일을 선택해주세요.');
+            }
+        });
+
+        // 에셋 추가 버튼 클릭 시
+        addAssetButton.addEventListener('click', async () => {
+            const assetName = document.getElementById('assetName').value;
+
+            if (!assetName || !uploadedImageData) {
+                alert('에셋 이름과 이미지를 업로드해주세요.');
+                return;
+            }
+
+            try {
+                const receipt = await contract.methods.addAsset(
+                    assetName,
+                    uploadedImageData
+                ).send({
+                    from: userAddress,
+                    gas: '5000000',
+                });
+
+                output.innerHTML = `에셋이 성공적으로 추가되었습니다.<br>트랜잭션 해시: ${receipt.transactionHash}`;
+                console.log(receipt);
+            } catch (error) {
+                console.error(error);
+                alert('에셋 추가에 실패했습니다. 오류를 확인하세요.');
+            }
+        });
+
+        // NFT 민팅 버튼 클릭 시
+        mintButton.addEventListener('click', async () => {
+            const baseAssetId = parseInt(document.getElementById('baseAssetId').value);
+
+            if (isNaN(baseAssetId)) {
+                alert('기본 에셋 ID를 올바르게 입력해주세요.');
+                return;
+            }
+
+            try {
+                const receipt = await contract.methods.mint(baseAssetId).send({
+                    from: userAddress,
+                    gas: '5000000',
+                });
+
+                output.innerHTML = `NFT가 성공적으로 민팅되었습니다.<br>트랜잭션 해시: ${receipt.transactionHash}`;
+                console.log(receipt);
+
+                // 민팅된 토큰 ID 가져오기
+                const tokenId = await contract.methods.tokenCounter().call() - 1;
+
+                // 민팅 후 캐릭터 렌더링
+                renderCharacter(tokenId);
+            } catch (error) {
+                console.error(error);
+                alert('NFT 민팅에 실패했습니다. 오류를 확인하세요.');
+            }
+        });
+
+        // 에셋 장착 버튼 클릭 시
+        equipAssetButton.addEventListener('click', async () => {
+            const tokenId = parseInt(document.getElementById('tokenId').value);
+            const assetId = parseInt(document.getElementById('assetId').value);
+            const x = parseInt(document.getElementById('assetX').value);
+            const y = parseInt(document.getElementById('assetY').value);
+            const width = parseInt(document.getElementById('assetWidth').value);
+            const height = parseInt(document.getElementById('assetHeight').value);
+
+            if (isNaN(tokenId) || isNaN(assetId)) {
+                alert('토큰 ID와 에셋 ID를 올바르게 입력해주세요.');
+                return;
+            }
+
+            try {
+                const receipt = await contract.methods.equipAsset(
+                    tokenId,
+                    assetId,
+                    x,
+                    y,
+                    width,
+                    height
+                ).send({
+                    from: userAddress,
+                    gas: '5000000',
+                });
+
+                output.innerHTML = `에셋이 성공적으로 장착되었습니다.<br>트랜잭션 해시: ${receipt.transactionHash}`;
+                console.log(receipt);
+
+                // 장착 후 캐릭터 렌더링
+                renderCharacter(tokenId);
+            } catch (error) {
+                console.error(error);
+                alert('에셋 장착에 실패했습니다. 오류를 확인하세요.');
+            }
+        });
+
+        // 캐릭터 렌더링 함수
+        async function renderCharacter(tokenId) {
+            try {
+                const tokenURI = await contract.methods.tokenURI(tokenId).call();
+                const metadataJSON = atob(tokenURI.substring(29)); // "data:application/json;base64," 제거 후 디코딩
+                const metadata = JSON.parse(metadataJSON);
+                const attributes = metadata.attributes;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < attributes.length; i++) {
+                    const assetId = parseInt(attributes[i].assetId);
+                    const x = parseInt(attributes[i].x);
+                    const y = parseInt(attributes[i].y);
+                    const width = parseInt(attributes[i].width);
+                    const height = parseInt(attributes[i].height);
+
+                    // 에셋의 이미지 데이터 가져오기
+                    const asset = await contract.methods.assets(assetId).call();
+                    const imageData = asset.imageData;
+
+                    // 이미지 표시
+                    const image = new Image();
+                    image.onload = () => {
+                        ctx.drawImage(image, x, y, width, height);
+                    };
+                    image.src = imageData;
+
+                    // 이미지 로딩 대기
+                    await new Promise((resolve) => {
+                        image.onload = resolve;
+                        image.onerror = resolve;
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                alert('캐릭터를 렌더링하는 데 실패했습니다.');
+            }
+        }
+    </script>
+</body>
+</html>
