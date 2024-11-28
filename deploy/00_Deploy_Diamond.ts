@@ -9,33 +9,33 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer, diamondAdmin } = await getNamedAccounts();
 
-  await diamond.deploy("elementa-diamond-V1", {
+  await diamond.deploy("origin-forge-diamond-V1", {
     from: deployer,
     owner: diamondAdmin,
-    facets: ["adminFacet"],
+    facets: ["adminFacet", "sbtFacet"],
   });
 
   if ((await getChainId()) == "1001") {
     const testnetABI = JSON.parse(
       fs.readFileSync(
-        "./deployments/kaia_testnet/elementa-diamond-V1.json",
+        "./deployments/kaia_testnet/origin-forge-diamond-V1.json",
         "utf8"
       )
     ).abi;
     return fs.writeFileSync(
-      "./elementa-diamond-V1-TEST.abi",
+      "./origin-forge-diamond-V1-TEST.abi",
       JSON.stringify(testnetABI)
     );
   }
   const mainnetABI = JSON.parse(
     fs.readFileSync(
-      "./deployments/kaia_mainnet/elementa-diamond-V1.json",
+      "./deployments/kaia_mainnet/origin-forge-diamond-V1.json",
       "utf8"
     )
   ).abi;
 
   return fs.writeFileSync(
-    "./elementa-diamond-V1-MAIN.abi",
+    "./origin-forge-diamond-V1-MAIN.abi",
     JSON.stringify(mainnetABI)
   );
 };

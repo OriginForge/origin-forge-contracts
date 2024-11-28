@@ -27,30 +27,29 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
 
     event TraitMetadataURIUpdated();
 
-
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(address defaultAdmin, address pauser, address minter, address upgrader)
+    function initialize(address defaultAdmin)
         initializer public
     {
-        __ERC721_init("OriginForgeSBT", "OF-SBT");
+        __ERC721_init("TESTSBT", "TEST-SBT");
+        // __ERC721_init("OriginForgeSBT", "OF-SBT");
         __ERC721Enumerable_init();
         __ERC721URIStorage_init();
         __ERC721Pausable_init();
         __AccessControl_init();
         __ERC721Burnable_init();
-        __EIP712_init("OriginForgeSBT", "1");
+        __EIP712_init("TESTSBT", "1");
         __ERC721Votes_init();
         __UUPSUpgradeable_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
-        _grantRole(PAUSER_ROLE, pauser);
-        _grantRole(MINTER_ROLE, minter);
-        _grantRole(UPGRADER_ROLE, upgrader);
+        _grantRole(PAUSER_ROLE, defaultAdmin);
+        _grantRole(MINTER_ROLE, defaultAdmin);
+        _grantRole(UPGRADER_ROLE, defaultAdmin);
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -89,14 +88,14 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
         override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721PausableUpgradeable, ERC721VotesUpgradeable)
         returns (address)
     {
-                address from = _ownerOf(tokenId);
-        if (from != address(0)) {
-            revert("Soulbound: Transfer failed");
-        }
+        //         address from = _ownerOf(tokenId);
+        // if (from != address(0)) {
+        //     revert("Soulbound: Transfer failed");
+        // }
 
-        if (balanceOf(to) > 0) {
-            revert("Soulbound: Transfer failed");
-        }
+        // if (balanceOf(to) > 0) {
+        //     revert("Soulbound: Transfer failed");
+        // }
         return super._update(to, tokenId, auth);
     }
 
@@ -137,5 +136,6 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
         
         emit TraitMetadataURIUpdated();
     }
+
 
 }

@@ -13,14 +13,6 @@ contract modifiersFacet {
         _;
     }
 
-    // modifier onlyDelegateEOA() {
-    //     require(
-    //         s.delegateEOAs[msg.sender].userIndex != 0,
-    //         "ModifiersFacet: not delegate EOA"
-    //     );
-    //     _;
-    // }
-
     modifier onlyEOA(address _address) {
         uint32 size;
         assembly {
@@ -30,4 +22,7 @@ contract modifiersFacet {
         require(size == 0, "ModifiersFacet: not EOA");
         _;
     }
+
+
+    
 }
