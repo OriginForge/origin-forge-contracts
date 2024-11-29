@@ -18,6 +18,18 @@ contract sbtFacet is modifiersFacet {
 
 
     function nft_getUri(uint _tokenId) external view returns (string memory) {
+        string[] memory staticTraits = getAttributes(_tokenId);
+        string[] memory dynamicTraits = getDynamicAttributes(_tokenId);
+        string[] memory combined = new string[](staticTraits.length + dynamicTraits.length);
+
+
+        for(uint256 i = 0; i < staticTraits.length; i++){
+            combined[i] = staticTraits[i];
+        }
+        for(uint256 i = 0; i < dynamicTraits.length; i++){
+            combined[staticTraits.length + i] = dynamicTraits[i];
+        }
+
         string memory metaData = Metadata.base64JsonDataURI(
             json.objectOf(
                 Solarray.strings(
@@ -35,38 +47,8 @@ contract sbtFacet is modifiersFacet {
                     json.property(
                         "image",
                         _generateSVG(_tokenId)
-                    )
-                    // json.property(
-                    //     "attributes",
-                    //     json.arrayOf(
-                    //         Solarray.strings(
-                    //             json.objectOf(
-                    //                 Solarray.strings(
-                    //                     json.property(
-                    //                         "trait_type",
-                    //                         "seed"
-                    //                     ),
-                    //                     json.property(
-                    //                         "value",
-                    //                         s.sbt[_tokenId].seed
-                    //                     )
-                    //                 )
-                    //             ),
-                    //             json.objectOf(
-                    //                 Solarray.strings(
-                    //                     json.property(
-                    //                         "trait_type", 
-                    //                         "baseEgg"
-                    //                     ),
-                    //                     json.property(
-                    //                         "value",
-                    //                         s.sbt[_tokenId].baseEgg
-                    //                     )
-                    //                 )
-                    //             )
-                    //         )
-                    //     )
-                    // )
+                    ),
+                    json.rawProperty("attributes", json.arrayOf(combined))
                 )
             )
         );
@@ -74,17 +56,35 @@ contract sbtFacet is modifiersFacet {
         return metaData;
     }
 
+    function getAttributes(uint _tokenId) internal view returns (string[] memory){
+        return Solarray.strings(
+            Metadata.attribute("seed", s.sbt[_tokenId].seed, DisplayType.String),
+            Metadata.attribute("baseEgg", s.sbt[_tokenId].baseEgg, DisplayType.Number)
+        );
+    }
+
+    function getDynamicAttributes(uint _tokenId) internal view returns (string[] memory){
+        string[] memory dynamicTraits = new string[](s.sbt[_tokenId].colorSet.length);
+        for(uint256 i = 0; i < s.sbt[_tokenId].colorSet.length; i++){
+            dynamicTraits[i] = Metadata.attribute("colorSet", s.sbt[_tokenId].colorSet[i], DisplayType.String);
+        }
+        return dynamicTraits;
+    }
+
+    
+
     function _generateSVG(uint _tokenId) public view returns (string memory) {
         return s.sbt[_tokenId].image;
     }
 
-    function setSBT(uint _tokenId, string memory _image, string memory _seed, string memory _baseEgg) external {
+    function setSBT(uint _tokenId, string memory _image, string memory _seed, string memory _baseEgg, string[] memory _colorSet) external {
         s.sbt[_tokenId].image = _image;
         s.sbt[_tokenId].seed = _seed;
         s.sbt[_tokenId].baseEgg = _baseEgg;
-        // s.sbt[_tokenId].colorSet = _colorSet;
+        s.sbt[_tokenId].colorSet = _colorSet;
     }
 
+    
     
 
 }

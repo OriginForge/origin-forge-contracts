@@ -33,7 +33,7 @@ struct SBT {
     string image;
     string seed;
     string baseEgg;
-    string[10] colorSet;
+    string[] colorSet;
 }
 
 struct AppStorage {
