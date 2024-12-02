@@ -22,7 +22,7 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     address public originForgeDiamond;
-    uint256 private _nextTokenId;
+    uint256 public _nextTokenId;
 
 
     event TraitMetadataURIUpdated();
@@ -60,10 +60,9 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
         _unpause();
     }
 
-    function safeMint(address to, string memory uri) public onlyRole(MINTER_ROLE) {
-        uint256 tokenId = _nextTokenId++;
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
+    function safeMint(address to, uint _tokenId,string memory uri) public onlyRole(MINTER_ROLE) {
+        _safeMint(to, _tokenId);
+        _setTokenURI(_tokenId, uri);
     }
 
     function clock() public view override returns (uint48) {
@@ -137,5 +136,8 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
         emit TraitMetadataURIUpdated();
     }
 
+    function increaseTokenId() public onlyRole(MINTER_ROLE) {
+        _nextTokenId++;
+    }
 
 }

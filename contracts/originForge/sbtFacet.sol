@@ -16,6 +16,10 @@ contract sbtFacet is modifiersFacet {
     using Metadata for *;
 
 
+    // delegate EOA mint
+    function nft_mint(address _to, uint _tokenId) external {
+        // _mint(_to, _tokenId);
+    }
 
     function nft_getUri(uint _tokenId) external view returns (string memory) {
         string[] memory staticTraits = getAttributes(_tokenId);

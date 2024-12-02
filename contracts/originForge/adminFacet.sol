@@ -2,16 +2,14 @@
 pragma solidity ^0.8.22;
 
 import {modifiersFacet} from "../shared/utils/modifiersFacet.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+// import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {User} from "../shared/storage/structs/AppStorage.sol";
 
 interface IVRF {
     function requestRandomWords() external returns (uint256 requestId);
 }
 contract adminFacet is modifiersFacet {
-    using Strings for *;
-
-    
+    // using Strings for *;
 
     // admin set Functions
     //
@@ -24,10 +22,8 @@ contract adminFacet is modifiersFacet {
     function admin_setRegisterUser(string memory _userId, string memory _userNickName, address _delegateAccount) external onlyAdmin  {
         string memory userId = lower(_userId);
         IVRF vrf = IVRF(s.contractNames["originValueVRF"]);
-        uint256 requestId = vrf.requestRandomWords();
-        
+        uint256 requestId = vrf.requestRandomWords(); 
         address userWallet;
-        
         bytes memory userIdBytes = bytes(_userId);
         
         // userId가 0x로 시작하는 경우
@@ -37,21 +33,20 @@ contract adminFacet is modifiersFacet {
                 uint8 b = uint8(userIdBytes[i]);
                 if (b >= 48 && b <= 57) {
                     addr = addr * 16 + (b - 48); // '0'-'9'
-            } else if (b >= 65 && b <= 70) {
-                addr = addr * 16 + (b - 55); // 'A'-'F'
-            } else if (b >= 97 && b <= 102) {
-                addr = addr * 16 + (b - 87); // 'a'-'f'
-            } else {
-                revert("Invalid character in address string");
+                    } else if (b >= 65 && b <= 70) {
+                        addr = addr * 16 + (b - 55); // 'A'-'F'
+                    } else if (b >= 97 && b <= 102) {
+                        addr = addr * 16 + (b - 87); // 'a'-'f'
+                    } else {
+                        revert("Invalid character in address string");
+                    }
                 }
-            }
 
             // string _userId을 address로 변환
             userWallet = address(addr);
         } 
             
         
-
         s.users[userId] = User({
             userId: userId,
             userNickName: _userNickName,
@@ -63,12 +58,6 @@ contract adminFacet is modifiersFacet {
         
     }
 
-    function get_User(string memory _userId) external view returns (User memory) {
-        
-        return s.users[lower(_userId)];
-    }
-
-
 
     // admin get Functions
     //
@@ -77,6 +66,10 @@ contract adminFacet is modifiersFacet {
         return s.contractNames[_contractName];
     }
 
+
+    function get_User(string memory _userId) external view returns (User memory) {
+        return s.users[lower(_userId)];
+    }
 
 
     
