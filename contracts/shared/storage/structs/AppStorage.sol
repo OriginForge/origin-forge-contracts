@@ -25,7 +25,7 @@ struct User {
 struct DelegateAccount {
     string userId;
     address connectedWallet;
-    bool isConnected;
+    // bool isConnected;
 }
 
 struct SBT {
@@ -40,4 +40,5 @@ struct AppStorage {
     mapping(string => address) contractNames;
     mapping(string => User) users;
     mapping(uint256 => SBT) sbt;
+    mapping(string => bool) isUseNickName;
 }

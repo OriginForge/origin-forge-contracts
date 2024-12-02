@@ -1,0 +1,40 @@
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.16;
+
+    import { VRFConsumerBase } from "@bisonai/orakl-contracts/v0.1/src/VRFConsumerBase.sol";
+    import { IVRFCoordinator } from "@bisonai/orakl-contracts/v0.1/src/interfaces/IVRFCoordinator.sol";
+
+    contract VRFConsumer is VRFConsumerBase {
+        uint public sRandomWord;
+        uint public requestKey;
+        IVRFCoordinator COORDINATOR;
+
+        bytes32 keyHash = 0x6cff5233743b3c0321a19ae11ab38ae0ddc7ddfe1e91b162fa8bb657488fb157;
+        address coordinator = 0x3F247f70DC083A2907B8E76635986fd09AA80EFb;
+        uint64 accId = 28;
+        uint32 callbackGasLimit = 2000000;
+        uint32 numWords = 1;
+
+        mapping(address => bool) isOwner;
+
+        constructor() VRFConsumerBase(coordinator) {
+            COORDINATOR = IVRFCoordinator(coordinator);
+            isOwner[msg.sender] = true;
+        }
+
+        function setOwnerAddress(address _owner) public {
+            require(isOwner[msg.sender], 'not owner');
+            isOwner[_owner] = true;
+        }
+
+        function requestRandomWords() public returns (uint256 requestId) {
+        requestId = COORDINATOR.requestRandomWords(keyHash, accId, callbackGasLimit, numWords);
+        }
+
+        function fulfillRandomWords(uint256 /* requestId */, uint256[] memory randomWords) internal override {
+        }
+    }
+
+
+
+    // 0xD35A01C3A0e008255EA0daBae5E071747A70C8fb

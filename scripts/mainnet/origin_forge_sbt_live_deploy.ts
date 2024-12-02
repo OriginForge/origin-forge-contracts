@@ -1,6 +1,7 @@
 import { ethers, upgrades } from "hardhat";
 
-// 0x2180d2903856C6e08F240d15953Df8A3C7859437
+export const SBT_ADDRESS = "0x2180d2903856C6e08F240d15953Df8A3C7859437";
+
 async function main() {
   const Token = await ethers.getContractFactory("OriginForgeSBT");
 
