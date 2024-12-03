@@ -20,6 +20,8 @@ struct User {
     uint256 userSBTId;
     // User의 OriginValue
     uint256 originValue;
+    // Point
+    uint256 point;
 }
 
 struct DelegateAccount {
@@ -34,6 +36,34 @@ struct SBT {
     string seed;
     string baseEgg;
     string[] colorSet;
+    
+    
+    // game status
+    uint256 level;
+    uint256 exp;
+
+
+    // 장착한 아이템
+    uint256[] equippedItems;
+
+
+}
+
+struct Item {
+    uint256 itemId;
+    // language
+    string[] itemName;
+    string[] itemDescription;
+    string itemImage;
+    // 능력치
+    uint256 ability;
+    // 아이템 타입
+    string assetType; // gif, png
+}
+
+struct Level {
+    uint256 level;
+    uint256 requiredExp;
 }
 
 struct AppStorage {
@@ -41,4 +71,6 @@ struct AppStorage {
     mapping(string => User) users;
     mapping(uint256 => SBT) sbt;
     mapping(string => bool) isUseNickName;
+    // mapping(uint256 => Level) levels;
+    // mapping(uint256 => Item) items;
 }

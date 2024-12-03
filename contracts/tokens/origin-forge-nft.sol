@@ -62,6 +62,7 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
 
     function safeMint(address to, uint _tokenId) external onlyRole(MINTER_ROLE) {
         _safeMint(to, _tokenId);
+        _update_metadata_uri(_tokenId);
     }
     // function safeMint(address to, uint _tokenId,string memory uri) public onlyRole(MINTER_ROLE) {
     //     _safeMint(to, _tokenId);
@@ -132,7 +133,7 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
 
 
     // diamond 
-    function _update_metadata_uri(uint _tokenId) external onlyRole(MINTER_ROLE) {
+    function _update_metadata_uri(uint _tokenId) public  {
         string memory uri = IOriginForgeDiamond(originForgeDiamond).nft_getUri(_tokenId);
         _setTokenURI(_tokenId, uri);
         
