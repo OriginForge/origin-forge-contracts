@@ -81,11 +81,18 @@ contract sbtFacet is modifiersFacet {
         return s.sbt[_tokenId].image;
     }
 
-    function setSBT(uint _tokenId, string memory _image, string memory _seed, string memory _baseEgg, string[] memory _colorSet) external {
+    function setSBT(uint _tokenId, string memory _image, string memory _seed, string memory _baseEgg, string[] memory _colorSet) external  {
         s.sbt[_tokenId].image = _image;
         s.sbt[_tokenId].seed = _seed;
         s.sbt[_tokenId].baseEgg = _baseEgg;
         s.sbt[_tokenId].colorSet = _colorSet;
+
+        
+    }
+
+    function mintSBT(address _to, string memory _userId) external {
+        IERC721 nft = IERC721(s.contractNames["nft"]);
+        nft.safeMint(_to, s.users[_userId].userSBTId);
     }
 
     

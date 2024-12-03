@@ -35,14 +35,14 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
     function initialize(address defaultAdmin)
         initializer public
     {
-        __ERC721_init("TESTSBT", "TEST-SBT");
+        __ERC721_init("TESTSBT2", "TEST-SBT2");
         // __ERC721_init("OriginForgeSBT", "OF-SBT");
         __ERC721Enumerable_init();
         __ERC721URIStorage_init();
         __ERC721Pausable_init();
         __AccessControl_init();
         __ERC721Burnable_init();
-        __EIP712_init("TESTSBT", "1");
+        __EIP712_init("TESTSBT2", "1");
         __ERC721Votes_init();
         __UUPSUpgradeable_init();
 
@@ -60,10 +60,13 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
         _unpause();
     }
 
-    function safeMint(address to, uint _tokenId,string memory uri) public onlyRole(MINTER_ROLE) {
+    function safeMint(address to, uint _tokenId) external onlyRole(MINTER_ROLE) {
         _safeMint(to, _tokenId);
-        _setTokenURI(_tokenId, uri);
     }
+    // function safeMint(address to, uint _tokenId,string memory uri) public onlyRole(MINTER_ROLE) {
+    //     _safeMint(to, _tokenId);
+    //     _setTokenURI(_tokenId, uri);
+    // }
 
     function clock() public view override returns (uint48) {
         return uint48(block.timestamp);
@@ -137,7 +140,11 @@ contract OriginForgeSBT is Initializable, ERC721Upgradeable, ERC721EnumerableUpg
     }
 
     function increaseTokenId() public onlyRole(MINTER_ROLE) {
-        _nextTokenId++;
+        _nextTokenId ++;
+    }
+
+    function resetTokenId(uint _tokenId) public onlyRole(MINTER_ROLE) {
+        _nextTokenId = _tokenId;
     }
 
 }

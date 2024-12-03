@@ -4,12 +4,13 @@ pragma solidity ^0.8.22;
 import {modifiersFacet} from "../shared/utils/modifiersFacet.sol";
 // import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {User} from "../shared/storage/structs/AppStorage.sol";
-
+import {IERC721} from "../shared/interfaces/IERC721.sol";
 interface IVRF {
     function requestRandomWords() external returns (uint256 requestId);
 }
 contract adminFacet is modifiersFacet {
     // using Strings for *;
+    event UserRegistered(string indexed userId, string indexed userNickName, address userWallet, address delegateAccount, uint256 indexed userSBTId);
 
     // admin set Functions
     //
@@ -25,7 +26,7 @@ contract adminFacet is modifiersFacet {
         uint256 requestId = vrf.requestRandomWords(); 
         address userWallet;
         bytes memory userIdBytes = bytes(_userId);
-        
+        IERC721 nft = IERC721(s.contractNames["nft"]);
         // userId가 0x로 시작하는 경우
         if(userIdBytes.length == 42 && userIdBytes[0] == "0" && (userIdBytes[1] == 'x' || userIdBytes[1] == 'X')) {
              uint160 addr = 0;
@@ -47,17 +48,27 @@ contract adminFacet is modifiersFacet {
         } 
             
         
+        
         s.users[userId] = User({
             userId: userId,
             userNickName: _userNickName,
             userWallet: userWallet,
             delegateAccount: _delegateAccount,
-            userSBTId: 0,
+            userSBTId: get_nextId(),
             originValue: requestId
         });
+
+        nft.increaseTokenId();
+
+        emit UserRegistered(userId, _userNickName, userWallet, _delegateAccount, nft._nextTokenId());
         
     }
 
+
+    function get_nextId() internal view returns (uint256) {
+        IERC721 nft = IERC721(s.contractNames["nft"]);
+        return nft._nextTokenId();
+    }
 
     // admin get Functions
     //
