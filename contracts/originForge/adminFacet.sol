@@ -49,14 +49,21 @@ contract adminFacet is modifiersFacet {
             
         
         
-        s.users[userId] = User({
-            userId: userId,
-            userNickName: _userNickName,
-            userWallet: userWallet,
-            delegateAccount: _delegateAccount,
-            userSBTId: get_nextId(),
-            originValue: requestId
-        });
+        s.users[userId].userId = userId;
+        s.users[userId].userNickName = _userNickName;
+        s.users[userId].userWallet = userWallet;
+        s.users[userId].delegateAccount = _delegateAccount;
+        s.users[userId].userSBTId = get_nextId();
+        s.users[userId].originValue = requestId;
+        
+        // User({
+        //     userId: userId,
+        //     userNickName: _userNickName,
+        //     userWallet: userWallet,
+        //     delegateAccount: _delegateAccount,
+        //     userSBTId: get_nextId(),
+        //     originValue: requestId
+        // });
 
         nft.increaseTokenId();
 
