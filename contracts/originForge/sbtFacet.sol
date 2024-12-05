@@ -16,8 +16,6 @@ contract sbtFacet is modifiersFacet {
     using Metadata for *;
 
 
-    
-
     function nft_getUri(uint _tokenId) external view returns (string memory) {
         string[] memory staticTraits = getAttributes(_tokenId);
         string[] memory dynamicTraits = getDynamicAttributes(_tokenId);
@@ -148,13 +146,11 @@ contract sbtFacet is modifiersFacet {
         return s.sbt[_tokenId].image;
     }
 
-    function setSBT(uint _tokenId, string memory _image, string memory _seed, string memory _baseEgg, string[] memory _colorSet) external  {
+    function setSBT(uint _tokenId, string memory _image, string memory _seed, string memory _baseEgg, string[] memory _colorSet) external onlyAdmin {
         s.sbt[_tokenId].image = _image;
         s.sbt[_tokenId].seed = _seed;
         s.sbt[_tokenId].baseEgg = _baseEgg;
         s.sbt[_tokenId].colorSet = _colorSet;
-
-        
     }
 
     function mintSBT(address _to, string memory _userId) external {
