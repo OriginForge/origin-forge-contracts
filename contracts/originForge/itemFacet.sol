@@ -21,6 +21,6 @@ contract itemFacet is modifiersFacet {
 
     function _renderItem(uint _tokenId) internal view returns (string memory) {}
 
-    
+    // 
 
 }
