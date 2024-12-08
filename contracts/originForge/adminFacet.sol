@@ -85,11 +85,13 @@ contract adminFacet is modifiersFacet {
     }
 
 
-    function get_User(string memory _userId) external view returns (User memory) {
-        return s.users[lower(_userId)];
+    function get_User(string memory _userId) external view returns (User memory, string memory) {
+        return (s.users[lower(_userId)], s.sbt[s.users[lower(_userId)].userSBTId].image);
     }
 
-
+    function get_isUser(string memory _userId) external view returns (bool) {
+        return bytes(s.users[lower(_userId)].userId).length > 0;
+    }
     
 
     // utils...
