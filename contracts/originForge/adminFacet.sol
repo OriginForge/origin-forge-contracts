@@ -47,7 +47,7 @@ contract adminFacet is modifiersFacet {
             userWallet = address(addr);
         } 
             
-        
+        require(s.isUseNickName[_userNickName] == false, "NickName is already used");
         
         s.users[userId].userId = userId;
         s.users[userId].userNickName = _userNickName;
@@ -55,6 +55,7 @@ contract adminFacet is modifiersFacet {
         s.users[userId].delegateAccount = _delegateAccount;
         s.users[userId].userSBTId = get_nextId();
         s.users[userId].originValue = requestId;
+        s.isUseNickName[_userNickName] = true;
         
         // User({
         //     userId: userId,
