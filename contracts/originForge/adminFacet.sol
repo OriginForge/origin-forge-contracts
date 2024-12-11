@@ -56,7 +56,7 @@ contract adminFacet is modifiersFacet {
         s.users[userId].userSBTId = get_nextId();
         s.users[userId].originValue = requestId;
         s.isUseNickName[_userNickName] = true;
-        
+
         // User({
         //     userId: userId,
         //     userNickName: _userNickName,
@@ -94,6 +94,9 @@ contract adminFacet is modifiersFacet {
         return bytes(s.users[lower(_userId)].userId).length > 0;
     }
     
+    function get_isUseNickName(string memory _userNickName) external view returns (bool) {
+        return s.isUseNickName[_userNickName];
+    }
 
     // utils...
     function lower(string memory _base) internal pure returns (string memory) {
