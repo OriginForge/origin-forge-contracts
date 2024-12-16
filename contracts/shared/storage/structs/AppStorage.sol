@@ -36,18 +36,16 @@ struct SBT {
     string seed;
     string baseEgg;
     string[] colorSet;
-    
-    
+        
     // game status
     uint256 level;
     uint256 exp;
 
-
     // 장착한 아이템
     uint256[] equippedItems;
 
-
 }
+
 
 struct Item {
     uint256 itemId;
