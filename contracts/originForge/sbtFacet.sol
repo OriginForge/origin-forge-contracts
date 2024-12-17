@@ -153,10 +153,10 @@ contract sbtFacet is modifiersFacet {
         s.sbt[_tokenId].colorSet = _colorSet;
     }
 
-    function mintSBT(address _to, string memory _userId) external {
-        IERC721 nft = IERC721(s.contractNames["nft"]);
-        nft.safeMint(_to, s.users[_userId].userSBTId);
-    }
+    // function mintSBT(address _to, string memory _userId) external {
+    //     IERC721 nft = IERC721(s.contractNames["nft"]);
+    //     nft.safeMint(_to, s.users[_userId].userSBTId);
+    // }
 
     
     

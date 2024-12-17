@@ -10,25 +10,18 @@ using UintQueueLibrary for UintQueueLibrary.UintQueue;
 
 
 struct User {
-    string userId;
     string userNickName;
     // 유저가 등록한 지갑
-    address userWallet;
-    // 등록한 지갑과 연결되어있는 대리 지갑
-    address delegateAccount;
+    address userAddress;
     // 유저의 SBT ID
     uint256 userSBTId;
     // User의 OriginValue
     uint256 originValue;
-    // Point
-    uint256 point;
+//     // Point
+//     uint256 point;
 }
 
-struct DelegateAccount {
-    string userId;
-    address connectedWallet;
-    // bool isConnected;
-}
+
 
 struct SBT {
     uint256 tokenId;
@@ -59,16 +52,18 @@ struct Item {
     string assetType; // gif, png
 }
 
-struct Level {
-    uint256 level;
-    uint256 requiredExp;
-}
+// struct Level {
+//     uint256 level;
+//     uint256 requiredExp;
+// }
 
 struct AppStorage {
     mapping(string => address) contractNames;
-    mapping(string => User) users;
+    mapping(address => User) users;
     mapping(uint256 => SBT) sbt;
     mapping(string => bool) isUseNickName;
+    mapping(string => address) nickNameToAddress;
+
     // mapping(uint256 => Level) levels;
     // mapping(uint256 => Item) items;
 }
