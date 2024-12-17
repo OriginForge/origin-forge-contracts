@@ -89,6 +89,10 @@ contract adminFacet is modifiersFacet {
         return s.sbt[_userSBTId];
     }
 
+    function getSBTCharacter(uint256 _userSBTId) external view returns (string memory) {
+        return s.sbt[_userSBTId].image;
+    }
+
     function getUserFromNickName(string memory _userNickName) external view returns (User memory) {
         return s.users[s.nickNameToAddress[lower(_userNickName)]];
     }
