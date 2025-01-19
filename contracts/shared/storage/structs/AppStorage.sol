@@ -43,7 +43,6 @@ struct SBT {
 
     // 장착한 아이템
     uint256[] equippedItems;
-
 }
 
 
@@ -62,6 +61,15 @@ struct Item {
 struct Level {
     uint256 level;
     uint256 requiredExp;
+}
+
+
+struct ElementaPoint {
+    uint pointAcc;
+    uint pointMaxStorage;
+    
+    uint lastClaimedTime;
+
 }
 
 struct AppStorage {

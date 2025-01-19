@@ -30,11 +30,11 @@ function sellOFToken(uint256 _amount) external {
 }
 
 
-function estimateBuyPrice(uint256 _amount) external view returns (uint256) {
+function estimateBuyPrice(uint256 _amount) public view returns (uint256) {
 
 }
 
-function estimateSellPrice(uint256 _amount) external view returns (uint256) {
+function estimateSellPrice(uint256 _amount) public view returns (uint256) {
 
 }
 
