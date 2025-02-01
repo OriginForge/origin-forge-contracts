@@ -3,80 +3,68 @@ pragma solidity ^0.8.0;
 
 import {EnumerableSet} from "../../libraries/LibEnumerableSet.sol";
 import {UintQueueLibrary} from "../../libraries/LibUintQueueLibrary.sol";
-
+import {Nation} from "./Nations.sol";
 
 using EnumerableSet for EnumerableSet.UintSet;
 using UintQueueLibrary for UintQueueLibrary.UintQueue;
 
 
-struct User {
-    string userId;
-    string userNickName;
-    // 유저가 등록한 지갑
-    address userWallet;
-    // 등록한 지갑과 연결되어있는 대리 지갑
-    address delegateAccount;
-    // 유저의 SBT ID
-    uint256 userSBTId;
-    // User의 OriginValue
-    uint256 originValue;
-    // Point
-    uint256 point;
-}
+struct OFStatus{
+    uint256 teamReserve; // team reserve
+    uint256 communityReserve; // community Event, marketing, etc
+    uint256 distributionReserve; // liquidity reserve, bonding curve minting
 
-struct DelegateAccount {
-    string userId;
-    address connectedWallet;
-    // bool isConnected;
-}
+    uint256 currentSupply;
+    uint256 totalBurned;
 
-struct SBT {
-    uint256 tokenId;
-    string image;
-    string seed;
-    string baseEgg;
-    string[] colorSet;
-        
-    // game status
-    uint256 level;
-    uint256 exp;
-
-    // 장착한 아이템
-    uint256[] equippedItems;
-}
-
-
-struct Item {
-    uint256 itemId;
-    // language
-    string[] itemName;
-    string[] itemDescription;
-    string itemImage;
-    // 능력치
-    uint256 ability;
-    // 아이템 타입
-    string assetType; // gif, png
-}
-
-struct Level {
-    uint256 level;
-    uint256 requiredExp;
-}
-
-
-struct ElementaPoint {
-    uint pointAcc;
-    uint pointMaxStorage;
+    uint256 totalMaxSupply;
     
-    uint lastClaimedTime;
-
+    // ================
+    uint256[10] _gap;
 }
+
+// originForge Services for a OF Token State
+struct Service{
+    string serviceName;
+    uint256 mintAmount;
+    uint256 burnAmount;
+    
+    // ================
+    uint256[10] _gap;
+}
+
+struct User{
+    string nickname;
+    uint256 userIndex;
+    address userAddress;
+    Nation nation;
+    uint256 originNumber;
+    // ================
+    uint256[9] _gap;
+}
+
+struct NationInfo {
+    string nationName;
+    string nationCode;
+    string nationFlag;
+    uint256 userCount;
+
+    // ================
+    uint256[10] _gap;
+}
+
+
 
 struct AppStorage {
-    mapping(string => address) contractNames;
-    mapping(string => User) users;
-    mapping(uint256 => SBT) sbt;
-    mapping(string => bool) isUseNickName;
-    // mapping(uint256 => Level) levels;
-    // mapping(uint256 => Item) items;
+    OFStatus ofStatus;
+    uint256 userCount;
+    mapping(string => address) contractAddresses; // contract address for a service
+    mapping(string => Service) services;
+    
+    // multi-index mapping
+    mapping(address => User) usersByAddress;      // address
+    mapping(uint256 => address) usersByIndex;     // index
+    mapping(string => address) usersByNickname;   // nickname
+    
+    mapping(Nation => NationInfo) nations;
 }
