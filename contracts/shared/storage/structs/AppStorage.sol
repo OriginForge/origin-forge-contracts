@@ -10,18 +10,25 @@ using UintQueueLibrary for UintQueueLibrary.UintQueue;
 
 
 struct OFStatus{
+    // max supply = 100,000,000
+    // teamReserve = 10% = 10,000,000
+    // communityReserve = 10% = 10,000,000
+    // partnerReserve = 10% = 10,000,000
+    // distributionReserve = 70% = 70,000,000
     uint256 teamReserve; // team reserve
     uint256 communityReserve; // community Event, marketing, etc
+    uint256 partnerReserve; // partner reserve
+    
     uint256 distributionReserve; // liquidity reserve, bonding curve minting
-
-    uint256 currentSupply;
+        
     uint256 totalBurned;
-
     uint256 totalMaxSupply;
     
     // ================
     uint256[10] _gap;
 }
+
+
 
 // originForge Services for a OF Token State
 struct Service{
@@ -58,6 +65,9 @@ struct NationInfo {
 struct AppStorage {
     OFStatus ofStatus;
     uint256 userCount;
+    
+
+
     mapping(string => address) contractAddresses; // contract address for a service
     mapping(string => Service) services;
     
@@ -68,3 +78,7 @@ struct AppStorage {
     
     mapping(Nation => NationInfo) nations;
 }
+
+
+
+
