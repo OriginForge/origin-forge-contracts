@@ -30,6 +30,10 @@ struct OFStatus{
 
 
 
+
+
+
+
 // originForge Services for a OF Token State
 struct Service{
     string serviceName;

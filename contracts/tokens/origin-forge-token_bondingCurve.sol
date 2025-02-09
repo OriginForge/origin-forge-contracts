@@ -14,7 +14,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-
+import "../shared/interfaces/IPayment.sol";
 
 
 contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, ERC20PausableUpgradeable, AccessControlUpgradeable, ERC20PermitUpgradeable, ERC20VotesUpgradeable, UUPSUpgradeable,  IERC721Receiver {
@@ -25,6 +25,9 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
     
     uint256 constant maxSupply = 100_000_000 * 10 ** 18;
     uint256 constant bondingCurveMaxSupply = 50_000_000 * 10 ** 18;
+    address public rebaseToken;
+    uint256 public proceeds;
+    uint256 public proceedsOfRebaseToken;
 
 
     modifier isMaxSupply(uint256 _amount) {
@@ -58,6 +61,14 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
         _grantRole(MINTER_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, bondingCurveAddress);
         _grantRole(UPGRADER_ROLE, defaultAdmin);
+    }
+
+    receive() external payable {
+        _feeRecieve();
+    }
+
+    fallback() external payable {
+        _feeRecieve();
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -114,19 +125,31 @@ contract OriginForge is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
         return this.onERC721Received.selector;
     }
 
-
-    // bonding curve functions
-    function buy(address _to,uint256 _amount) external isBondingCurveMaxSupply(_amount) onlyRole(MINTER_ROLE) {
-        uint256 amountOfToken = _amount * 10 ** 18;
-        mint(_to, amountOfToken);
+    function setRebaseToken(address _rebaseToken) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        rebaseToken = _rebaseToken;
     }
 
-
-    function sell(address _to, uint256 _amount) external onlyRole(MINTER_ROLE) {
-        uint256 amountOfToken = _amount * 10 ** 18;
-        burnFrom(_to, amountOfToken);
+    function proceedToRebase() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IPayment transRebase = IPayment(rebaseToken);
+        transRebase.stakeFor{value: proceeds}(address(this));
+        proceedsOfRebaseToken += proceeds;
+        proceeds = 0;
     }
 
+    function transferRebaseToken(address _to) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20 _rebaseToken = IERC20(rebaseToken);
+        _rebaseToken.transfer(_to, _rebaseToken.balanceOf(address(this)));
+    }
 
+    function bondingCurveMint(address _to, uint256 _amount) external isBondingCurveMaxSupply(_amount) onlyRole(MINTER_ROLE) {
+        mint(_to, _amount);
+    }
 
+    function bondingCurveBurn(address _from, uint256 _amount) external onlyRole(MINTER_ROLE) {
+        burnFrom(_from, _amount);
+    }   
+
+    function _feeRecieve() internal {
+        proceeds += msg.value;
+    }
 }
